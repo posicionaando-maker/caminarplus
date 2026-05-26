@@ -6,7 +6,6 @@
     <meta name="theme-color" content="#2C6E4E">
     <title>Caminar+ · Plan de auto preparación física</title>
     
-    <!-- Manifest para PWA (offline) -->
     <link rel="manifest" href="data:application/manifest+json,{
         \"name\":\"Caminar+ Plan Físico\",
         \"short_name\":\"Caminar+\",
@@ -22,7 +21,6 @@
     }">
     
     <style>
-        /* ========== ESTILOS GLOBALES ========== */
         * {
             margin: 0;
             padding: 0;
@@ -79,13 +77,6 @@
             padding-left: 12px;
         }
         
-        h3 {
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin: 16px 0 8px;
-            color: #2C6E4E;
-        }
-        
         .card {
             background: #F9FBF9;
             border-radius: 24px;
@@ -121,7 +112,6 @@
         
         button:active { transform: scale(0.97); }
         
-        /* Banner de instalación */
         .install-banner {
             background: #2C6E4E;
             color: white;
@@ -219,17 +209,23 @@
             font-size: 0.9rem;
         }
         
-        /* Logo interactivo con indicador de doble clic */
+        .success {
+            background: #E0F5E8;
+            border-left: 5px solid #2C6E4E;
+            padding: 16px;
+            border-radius: 20px;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+        
         .logo-clickable {
             cursor: pointer;
             transition: transform 0.1s;
-            position: relative;
         }
         .logo-clickable:active {
             transform: scale(0.97);
         }
         
-        /* Tooltip que indica doble clic */
         .logo-wrapper {
             position: relative;
             display: inline-block;
@@ -269,7 +265,6 @@
             border-bottom: 1px solid #DCE5DC;
         }
         
-        /* Modal de ayuda */
         .modal {
             display: none;
             position: fixed;
@@ -298,7 +293,6 @@
         .modal-content button {
             width: auto;
             margin-top: 20px;
-            background: #2C6E4E;
         }
         .close-modal {
             position: sticky;
@@ -309,7 +303,6 @@
             cursor: pointer;
         }
         
-        /* Toast pequeño para primera vez */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -323,19 +316,23 @@
             z-index: 1100;
             animation: fadeOut 3s ease forwards;
             pointer-events: none;
-            white-space: nowrap;
         }
         @keyframes fadeOut {
             0% { opacity: 1; bottom: 30px; }
             70% { opacity: 1; }
             100% { opacity: 0; bottom: 0px; visibility: hidden; }
         }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #2C6E4E;
+        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <!-- BANNER DE INSTALACIÓN (se muestra en móvil si no está instalado) -->
     <div id="installBanner" class="install-banner" style="display: none;">
         <span>📲 Instala Caminar+ en tu pantalla de inicio</span>
         <div style="display: flex; gap: 8px;">
@@ -344,7 +341,7 @@
         </div>
     </div>
 
-    <!-- PANTALLA DE BIENVENIDA / ADVERTENCIA MÉDICA -->
+    <!-- PANTALLA DE BIENVENIDA -->
     <div id="welcomeScreen" class="screen active">
         <div class="logo-small">
             <div class="logo-wrapper">
@@ -367,13 +364,13 @@
         
         <div class="warning">
             ⚠️ <strong>Recomendación médica</strong><br>
-            Si tiene dolor articular crónico, artrosis avanzada, hernia discal, problemas cardiacos o presión arterial no controlada, consulte a su médico antes de iniciar. Escuche siempre a su cuerpo.
+            Si tiene dolor articular crónico, artrosis avanzada, hernia discal, problemas cardiacos o presión arterial no controlada, consulte a su médico antes de iniciar.
         </div>
         
         <button id="startSetupBtn">Comenzar configuración →</button>
     </div>
     
-    <!-- PANTALLA DE CONFIGURACIÓN INICIAL -->
+    <!-- PANTALLA DE CONFIGURACIÓN -->
     <div id="setupScreen" class="screen">
         <h2>📋 Tus datos</h2>
         <p>Completa para un plan personalizado (solo se guardan en tu dispositivo).</p>
@@ -400,6 +397,7 @@
             <option value="45">45 minutos</option>
         </select>
         
+        <div id="setupMessage" style="margin: 10px 0;"></div>
         <button id="saveProfileBtn">Guardar y generar plan</button>
     </div>
     
@@ -435,7 +433,7 @@
         <div id="nextTestReminder" class="warning" style="margin-top:16px; font-size:0.85rem;"></div>
     </div>
     
-    <!-- PANTALLA EJECUCIÓN DE PLAN DIARIO -->
+    <!-- PANTALLA EJECUCIÓN DE PLAN -->
     <div id="workoutScreen" class="screen">
         <h2>🏃 Plan de hoy</h2>
         <div id="workoutExercisesList"></div>
@@ -453,7 +451,7 @@
         </div>
     </div>
     
-    <!-- MICROSESIÓN OFICINA (rápida) -->
+    <!-- MICROSESIÓN -->
     <div id="microScreen" class="screen">
         <h2>💼 Microsesión en el trabajo</h2>
         <p>Ejercicios sentado o de pie junto al escritorio (sin estera).</p>
@@ -461,7 +459,7 @@
         <button id="backFromMicroBtn" class="secondary">← Volver</button>
     </div>
     
-    <!-- PROGRESO Y GRÁFICOS -->
+    <!-- PROGRESO -->
     <div id="progressScreen" class="screen">
         <h2>📈 Tu evolución</h2>
         <div id="progressStats"></div>
@@ -469,118 +467,76 @@
     </div>
 </div>
 
-<!-- MODAL DE AYUDA (se abre con doble clic en cualquier logo) -->
+<!-- MODAL DE AYUDA -->
 <div id="helpModal" class="modal">
     <div class="modal-content">
         <div class="close-modal" id="closeHelpModal">&times;</div>
         <h2>📘 Ayuda de Caminar+</h2>
-        <p><strong>¿Qué es?</strong> App de preparación física para personas de 45-70 años, adaptada a tu peso, edad y tiempo.</p>
-        
+        <p><strong>¿Qué es?</strong> App de preparación física para personas de 45-70 años.</p>
         <h3>✨ Beneficios</h3>
         <ul>
-            <li>Ejercicios sin implementos (solo manta opcional)</li>
+            <li>Ejercicios sin implementos</li>
             <li>Protección articular si hay sobrepeso</li>
-            <li>Microsesiones para oficina (sentado o de pie)</li>
+            <li>Microsesiones para oficina</li>
             <li>Funciona sin internet</li>
-            <li>Test de silla cada 15 días para medir progreso</li>
         </ul>
-        
         <h3>🖱️ Cómo usar</h3>
         <ul>
-            <li><strong>Configuración inicial:</strong> ingresa edad, peso, talla y tiempo disponible.</li>
+            <li><strong>Configuración:</strong> ingresa edad, peso, talla y tiempo.</li>
             <li><strong>Plan del día:</strong> sigue los ejercicios con cronómetro.</li>
-            <li><strong>Microsesión:</strong> ideal para la oficina, pulsa el botón "Cronómetro".</li>
-            <li><strong>Test de silla:</strong> levántate y siéntate 30 segundos sin usar manos.</li>
-            <li><strong>Botón "Me duele":</strong> detiene la sesión si hay dolor articular.</li>
-            <li><strong>🔍 Doble clic en el logo verde:</strong> abre esta ayuda en cualquier pantalla.</li>
+            <li><strong>Doble clic en el logo verde:</strong> abre esta ayuda.</li>
         </ul>
-        
-        <h3>⚠️ Seguridad</h3>
-        <p>Dolor articular agudo = detener. Ardor muscular = normal. Consulta a tu médico si tienes dudas.</p>
-        
         <button id="closeHelpBtn">Entendido</button>
     </div>
 </div>
 
 <script>
     // ============================================================
-    //  INSTALACIÓN PWA (para móvil)
+    //  ALMACENAMIENTO (IndexedDB + fallback localStorage)
     // ============================================================
-    let deferredPrompt = null;
-    const installBanner = document.getElementById("installBanner");
-    const installBtn = document.getElementById("installBtn");
-    const closeBannerBtn = document.getElementById("closeBannerBtn");
+    let db = null;
+    let storageReady = false;
+    let useLocalStorage = false;
     
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                         window.navigator.standalone === true;
-    
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        if (!isStandalone) {
-            installBanner.style.display = "flex";
-        }
-    });
-    
-    window.addEventListener('appinstalled', () => {
-        deferredPrompt = null;
-        installBanner.style.display = "none";
-    });
-    
-    if (installBtn) {
-        installBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    installBanner.style.display = "none";
-                }
-                deferredPrompt = null;
-            } else {
-                alert("Para instalar: en Android toca ⋮ → Instalar app. En iPhone: compartir → Añadir a pantalla de inicio.");
+    async function initStorage() {
+        return new Promise(async (resolve) => {
+            try {
+                const request = indexedDB.open("CaminarPlusDB", 1);
+                request.onerror = () => {
+                    console.log("IndexedDB fallback a localStorage");
+                    useLocalStorage = true;
+                    storageReady = true;
+                    resolve();
+                };
+                request.onsuccess = () => {
+                    db = request.result;
+                    useLocalStorage = false;
+                    storageReady = true;
+                    resolve();
+                };
+                request.onupgradeneeded = (event) => {
+                    const dbRef = event.target.result;
+                    if (!dbRef.objectStoreNames.contains("profile")) {
+                        dbRef.createObjectStore("profile", { keyPath: "id" });
+                    }
+                    if (!dbRef.objectStoreNames.contains("history")) {
+                        dbRef.createObjectStore("history", { keyPath: "date" });
+                    }
+                };
+            } catch(e) {
+                console.log("Error IndexedDB, usando localStorage", e);
+                useLocalStorage = true;
+                storageReady = true;
+                resolve();
             }
         });
     }
     
-    if (closeBannerBtn) {
-        closeBannerBtn.addEventListener('click', () => {
-            installBanner.style.display = "none";
-        });
-    }
-    
-    if (isStandalone) {
-        installBanner.style.display = "none";
-    }
-    
-    // ============================================================
-    //  BASE DE DATOS INDEXEDDB
-    // ============================================================
-    const DB_NAME = "CaminarPlusDB";
-    const DB_VERSION = 1;
-    let db = null;
-    
-    function openDB() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, DB_VERSION);
-            request.onerror = () => reject(request.error);
-            request.onsuccess = () => {
-                db = request.result;
-                resolve(db);
-            };
-            request.onupgradeneeded = (event) => {
-                const dbRef = event.target.result;
-                if (!dbRef.objectStoreNames.contains("profile")) {
-                    dbRef.createObjectStore("profile", { keyPath: "id" });
-                }
-                if (!dbRef.objectStoreNames.contains("history")) {
-                    const store = dbRef.createObjectStore("history", { keyPath: "date" });
-                    store.createIndex("byDate", "date");
-                }
-            };
-        });
-    }
-    
     async function saveProfile(profile) {
+        if (useLocalStorage) {
+            localStorage.setItem("userProfile", JSON.stringify(profile));
+            return;
+        }
         const tx = db.transaction("profile", "readwrite");
         const store = tx.objectStore("profile");
         await store.put({ id: "user", ...profile });
@@ -588,6 +544,10 @@
     }
     
     async function loadProfile() {
+        if (useLocalStorage) {
+            const data = localStorage.getItem("userProfile");
+            return data ? JSON.parse(data) : null;
+        }
         const tx = db.transaction("profile", "readonly");
         const store = tx.objectStore("profile");
         const result = await store.get("user");
@@ -595,12 +555,22 @@
     }
     
     async function saveHistoryEntry(entry) {
+        if (useLocalStorage) {
+            const history = JSON.parse(localStorage.getItem("history") || "[]");
+            history.push(entry);
+            localStorage.setItem("history", JSON.stringify(history));
+            return;
+        }
         const tx = db.transaction("history", "readwrite");
         const store = tx.objectStore("history");
         await store.put(entry);
     }
     
     async function loadHistory() {
+        if (useLocalStorage) {
+            const history = JSON.parse(localStorage.getItem("history") || "[]");
+            return history.sort((a,b) => new Date(a.date) - new Date(b.date));
+        }
         const tx = db.transaction("history", "readonly");
         const store = tx.objectStore("history");
         const all = await store.getAll();
@@ -608,33 +578,18 @@
     }
     
     // ============================================================
-    //  BIBLIOTECA DE EJERCICIOS (20 ejercicios con SVG)
+    //  EJERCICIOS (versión reducida pero funcional)
     // ============================================================
     const EXERCISES = [
-        { id: "marcha1", nombre: "Marcha en sitio sin impacto", descripcion: "Levanta rodillas 10-15cm, brazos suaves. Ideal si tienes sobrepeso.", tipo: "cardio_sin_impacto", imcMax: 45, requiereEstera: false, sentado: false, duracion: 45, svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="35" r="5" fill="#2C6E4E"/><line x1="50" y1="40" x2="50" y2="60" stroke="#2C6E4E" stroke-width="3"/><line x1="50" y1="60" x2="58" y2="75" stroke="#2C6E4E" stroke-width="3"/><line x1="50" y1="60" x2="42" y2="70" stroke="#2C6E4E" stroke-width="3"/><line x1="50" y1="50" x2="58" y2="52" stroke="#2C6E4E" stroke-width="2"/><line x1="50" y1="50" x2="42" y2="52" stroke="#2C6E4E" stroke-width="2"/></svg>` },
-        { id: "talones", nombre: "Elevación de talones (de pie)", descripcion: "Apóyate en pared si necesitas. Sube y baja talones suavemente.", tipo: "cardio_sin_impacto", imcMax: 45, requiereEstera: false, sentado: false, duracion: 40, svg: `<svg viewBox="0 0 100 100"><rect x="40" y="70" width="20" height="5" fill="#2C6E4E"/><circle cx="50" cy="35" r="5"/><line x1="50" y1="40" x2="50" y2="65" stroke="#2C6E4E" stroke-width="3"/><path d="M45 65 L55 65" stroke="#2C6E4E"/></svg>` },
-        { id: "puente", nombre: "Puente de glúteos", descripcion: "Tumbado boca arriba, rodillas dobladas, sube cadera sin arquear espalda.", tipo: "fuerza_suelo", imcMax: 39, requiereEstera: true, sentado: false, duracion: 30, svg: `<svg viewBox="0 0 100 100"><rect x="30" y="75" width="40" height="10" fill="#ccc"/><circle cx="50" cy="60" r="6"/><path d="M35 75 L50 60 L65 75" stroke="#2C6E4E" fill="none" stroke-width="3"/></svg>` },
-        { id: "elev_pierna", nombre: "Elevación de pierna supino", descripcion: "Boca arriba, eleva una pierna recta 20cm, baja suave.", tipo: "fuerza_suelo", imcMax: 39, requiereEstera: true, sentado: false, duracion: 25, svg: `<svg viewBox="0 0 100 100"><rect x="30" y="70" width="40" height="8"/><line x1="50" y1="70" x2="50" y2="55" stroke="#2C6E4E" stroke-width="3"/><circle cx="50" cy="40" r="5"/></svg>` },
-        { id: "apertura_brazos", nombre: "Apertura de brazos prono", descripcion: "Boca abajo, brazos en cruz, sube y baja sin dolor lumbar.", tipo: "fuerza_suelo", imcMax: 42, requiereEstera: true, sentado: false, duracion: 30, svg: `<svg viewBox="0 0 100 100"><rect x="35" y="60" width="30" height="10"/><line x1="40" y1="65" x2="20" y2="50" stroke="#2C6E4E" stroke-width="3"/><line x1="60" y1="65" x2="80" y2="50" stroke="#2C6E4E" stroke-width="3"/><circle cx="50" cy="40" r="5"/></svg>` },
-        { id: "micro_talones_sentado", nombre: "Talones sentado", descripcion: "Sentado, levanta talones apoyando puntas. Ideal para oficina.", tipo: "micro_oficina", imcMax: 45, requiereEstera: false, sentado: true, duracion: 40, svg: `<svg viewBox="0 0 100 100"><rect x="30" y="60" width="40" height="20" fill="#ddd"/><circle cx="50" cy="45" r="5"/><line x1="50" y1="50" x2="50" y2="60"/><path d="M40 80 L60 80" stroke="#2C6E4E"/></svg>` },
-        { id: "micro_giro_tronco", nombre: "Giro de tronco sentado", descripcion: "Manos en nuca, gira suave a cada lado.", tipo: "micro_oficina", imcMax: 45, requiereEstera: false, sentado: true, duracion: 30, svg: `<svg viewBox="0 0 100 100"><rect x="35" y="55" width="30" height="20"/><circle cx="50" cy="40" r="5"/><path d="M35 70 Q25 65 20 60" stroke="#2C6E4E" fill="none"/><path d="M65 70 Q75 65 80 60" stroke="#2C6E4E" fill="none"/></svg>` },
-        { id: "micro_omoplatos", nombre: "Apretar omóplatos", descripcion: "Sentado, lleva hombros atrás como si juntaras omóplatos.", tipo: "micro_oficina", imcMax: 45, requiereEstera: false, sentado: true, duracion: 35, svg: `<svg viewBox="0 0 100 100"><circle cx="35" cy="50" r="5"/><circle cx="65" cy="50" r="5"/><path d="M40 55 Q50 45 60 55" stroke="#2C6E4E" fill="none"/></svg>` },
-        { id: "micro_marcha_sentado", nombre: "Marcha sentado", descripcion: "Levanta rodillas alternas hacia el pecho.", tipo: "micro_oficina", imcMax: 45, requiereEstera: false, sentado: true, duracion: 45, svg: `<svg viewBox="0 0 100 100"><rect x="30" y="60" width="40" height="15"/><circle cx="50" cy="40"/><line x1="50" y1="45" x2="50" y2="60"/><line x1="50" y1="60" x2="35" y2="65"/></svg>` },
-        { id: "estiramiento_isquio", nombre: "Estiramiento isquiotibial sentado", descripcion: "Sentado, estira una pierna, flexiona tronco suave.", tipo: "estiramiento", imcMax: 45, requiereEstera: false, sentado: true, duracion: 30, svg: `<svg viewBox="0 0 100 100"><rect x="30" y="60" width="20" height="20"/><line x1="35" y1="60" x2="35" y2="35" stroke="#2C6E4E"/><circle cx="35" cy="30" r="4"/><path d="M35 40 L60 65" stroke="#2C6E4E"/></svg>` },
-        { id: "rodillas_lat", nombre: "Rodillas laterales", descripcion: "De pie, abre rodilla hacia lado como si esquivaras.", tipo: "cardio_sin_impacto", imcMax: 40, requiereEstera: false, sentado: false, duracion: 40, svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="35" r="5"/><line x1="50" y1="40" x2="50" y2="60"/><line x1="50" y1="60" x2="65" y2="70"/><line x1="50" y1="60" x2="35" y2="70"/></svg>` },
-        { id: "sentadilla_pared", nombre: "Sentadilla con pared", descripcion: "Espalda apoyada en pared, baja 10-15cm. Sin impacto.", tipo: "fuerza_suelo", imcMax: 32, requiereEstera: false, sentado: false, duracion: 30, svg: `<svg viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="60" fill="#eee"/><circle cx="50" cy="40" r="5"/><path d="M35 65 L50 55 L65 65" stroke="#2C6E4E"/></svg>` },
-        { id: "estiramiento_cuello", nombre: "Estiramiento cuello lateral", descripcion: "De pie o sentado, lleva oreja a hombro suave.", tipo: "estiramiento", imcMax: 45, requiereEstera: false, sentado: true, duracion: 20, svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="35" r="6"/><line x1="50" y1="41" x2="50" y2="60"/><path d="M40 35 Q35 30 40 25" stroke="#2C6E4E" fill="none"/></svg>` },
-        { id: "elev_cadera_supino", nombre: "Elevación de cadera (glúteo)", descripcion: "Mismo puente pero más lento. Aprieta glúteo arriba.", tipo: "fuerza_suelo", imcMax: 45, requiereEstera: true, sentado: false, duracion: 35, svg: `<svg viewBox="0 0 100 100"><rect x="30" y="75" width="40" height="8"/><circle cx="50" cy="60" r="6"/><path d="M35 75 L50 58 L65 75" stroke="#2C6E4E"/></svg>` },
-        { id: "rotacion_tobillo", nombre: "Rotación de tobillo sentado", descripcion: "Levanta pie y rota tobillo en círculos.", tipo: "micro_oficina", imcMax: 45, requiereEstera: false, sentado: true, duracion: 30, svg: `<svg viewBox="0 0 100 100"><rect x="40" y="70" width="20" height="10"/><circle cx="50" cy="68" r="3"/><path d="M45 68 A5 5 0 1 1 55 68" stroke="#2C6E4E"/></svg>` },
-        { id: "abdominal_hipopresivo", nombre: "Respiración hipopresiva", descripcion: "Tumbado, exhala todo y mete abdomen suavemente.", tipo: "estiramiento", imcMax: 45, requiereEstera: true, sentado: false, duracion: 20, svg: `<svg viewBox="0 0 100 100"><rect x="30" y="60" width="40" height="20"/><ellipse cx="50" cy="55" rx="15" ry="8"/></svg>` },
-        { id: "apertura_pierna_supino", nombre: "Apertura de pierna acostado", descripcion: "Boca arriba, abre y cierra piernas deslizando.", tipo: "fuerza_suelo", imcMax: 40, requiereEstera: true, sentado: false, duracion: 35, svg: `<svg viewBox="0 0 100 100"><rect x="30" y="70" width="40" height="8"/><line x1="40" y1="70" x2="25" y2="85" stroke="#2C6E4E"/><line x1="60" y1="70" x2="75" y2="85" stroke="#2C6E4E"/></svg>` },
-        { id: "estiramiento_espalda", nombre: "Estiramiento gato-vaca", descripcion: "Manos y rodillas, arquea y redondea espalda.", tipo: "estiramiento", imcMax: 35, requiereEstera: true, sentado: false, duracion: 30, svg: `<svg viewBox="0 0 100 100"><path d="M30 60 Q50 40 70 60" stroke="#2C6E4E" fill="none"/><circle cx="40" cy="50" r="4"/><circle cx="60" cy="50" r="4"/></svg>` },
-        { id: "micro_elev_rodilla_pie", nombre: "Elevación rodilla de pie (apoyado)", descripcion: "Junto al escritorio, sube rodilla suavemente.", tipo: "micro_oficina", imcMax: 45, requiereEstera: false, sentado: false, duracion: 40, svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="35"/><line x1="50" y1="40" x2="50" y2="60"/><line x1="50" y1="60" x2="60" y2="50"/></svg>` },
-        { id: "caminata_lateral", nombre: "Desplazamiento lateral", descripcion: "De pie, da pasos laterales suaves.", tipo: "cardio_sin_impacto", imcMax: 40, requiereEstera: false, sentado: false, duracion: 45, svg: `<svg viewBox="0 0 100 100"><circle cx="40" cy="35"/><circle cx="60" cy="35"/><line x1="40" y1="40" x2="40" y2="60"/><line x1="60" y1="40" x2="60" y2="60"/></svg>` }
+        { id: "marcha1", nombre: "Marcha en sitio sin impacto", descripcion: "Levanta rodillas 10-15cm", tipo: "cardio_sin_impacto", imcMax: 45, sentado: false, duracion: 45, svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="35" r="5" fill="#2C6E4E"/><line x1="50" y1="40" x2="50" y2="60" stroke="#2C6E4E" stroke-width="3"/><line x1="50" y1="60" x2="58" y2="75" stroke="#2C6E4E"/><line x1="50" y1="60" x2="42" y2="70" stroke="#2C6E4E"/></svg>` },
+        { id: "talones", nombre: "Elevación de talones", descripcion: "Sube y baja talones suavemente", tipo: "cardio_sin_impacto", imcMax: 45, sentado: false, duracion: 40, svg: `<svg viewBox="0 0 100 100"><rect x="40" y="70" width="20" height="5" fill="#2C6E4E"/><circle cx="50" cy="35" r="5"/><line x1="50" y1="40" x2="50" y2="65" stroke="#2C6E4E"/></svg>` },
+        { id: "puente", nombre: "Puente de glúteos", descripcion: "Sube cadera sin arquear espalda", tipo: "fuerza_suelo", imcMax: 39, sentado: false, duracion: 30, svg: `<svg viewBox="0 0 100 100"><rect x="30" y="75" width="40" height="10"/><circle cx="50" cy="60" r="6"/><path d="M35 75 L50 60 L65 75" stroke="#2C6E4E" fill="none" stroke-width="3"/></svg>` },
+        { id: "micro_talones", nombre: "Talones sentado (oficina)", descripcion: "Levanta talones en la silla", tipo: "micro_oficina", imcMax: 45, sentado: true, duracion: 40, svg: `<svg viewBox="0 0 100 100"><rect x="30" y="60" width="40" height="20"/><circle cx="50" cy="45" r="5"/><line x1="50" y1="50" x2="50" y2="60"/></svg>` },
+        { id: "micro_giro", nombre: "Giro de tronco sentado", descripcion: "Manos en nuca, gira suave", tipo: "micro_oficina", imcMax: 45, sentado: true, duracion: 30, svg: `<svg viewBox="0 0 100 100"><rect x="35" y="55" width="30" height="20"/><circle cx="50" cy="40" r="5"/><path d="M35 70 Q25 65 20 60" stroke="#2C6E4E" fill="none"/></svg>` }
     ];
     
     // ==========================
-    //  LÓGICA PRINCIPAL APP
+    //  LÓGICA PRINCIPAL
     // ==========================
     let currentProfile = null;
     let currentWorkoutExercises = [];
@@ -655,7 +610,6 @@
     function showScreen(screenName) {
         Object.keys(screens).forEach(s => screens[s].classList.remove("active"));
         screens[screenName].classList.add("active");
-        // Reasignar doble clic después de cambiar pantalla
         bindDoubleClickToLogos();
     }
     
@@ -665,32 +619,24 @@
         let context = "";
         if (imc < 25) context = "Peso saludable";
         else if (imc < 30) context = "Sobrepeso leve";
-        else if (imc < 35) context = "Sobrepeso significativo (cuidado articular)";
-        else context = "Contexto corporal con obesidad (priorizar ejercicios de bajo impacto)";
+        else if (imc < 35) context = "Sobrepeso significativo";
+        else context = "Contexto con obesidad (bajo impacto)";
         return { imc, context };
     }
     
     function generateDailyPlan(profile) {
         const { imc } = getIMCContext(profile.weight, profile.height);
-        let allowedTypes = ["cardio_sin_impacto", "fuerza_suelo", "estiramiento"];
-        if (imc > 35) {
-            allowedTypes = ["cardio_sin_impacto", "estiramiento"];
-        }
+        let allowedTypes = ["cardio_sin_impacto", "fuerza_suelo"];
+        if (imc > 35) allowedTypes = ["cardio_sin_impacto"];
         let filtered = EXERCISES.filter(ex => ex.imcMax >= imc && allowedTypes.includes(ex.tipo) && !ex.sentado);
-        if (profile.timePerDay === 15) filtered = filtered.slice(0, 4);
-        else if (profile.timePerDay === 30) filtered = filtered.slice(0, 6);
-        else filtered = filtered.slice(0, 9);
+        if (profile.timePerDay === 15) filtered = filtered.slice(0, 3);
+        else if (profile.timePerDay === 30) filtered = filtered.slice(0, 4);
+        else filtered = filtered.slice(0, 5);
         return filtered;
     }
     
     function getMicroExercises() {
-        return EXERCISES.filter(ex => ex.tipo === "micro_oficina").slice(0, 6);
-    }
-    
-    async function registerSitToStand(reps, painLevel) {
-        const today = new Date().toISOString().slice(0,10);
-        await saveHistoryEntry({ date: today, type: "sitToStand", reps, painLevel });
-        alert(`Test guardado: ${reps} repeticiones en 30s. Dolor: ${painLevel}/10`);
+        return EXERCISES.filter(ex => ex.tipo === "micro_oficina");
     }
     
     async function refreshDashboard() {
@@ -707,12 +653,12 @@
             const lastDate = new Date(lastTest.date);
             const diffDays = Math.floor((new Date() - lastDate) / (1000*60*60*24));
             if (diffDays >= 15) {
-                document.getElementById("nextTestReminder").innerHTML = "📢 ¡Ya pasaron 15 días! Realiza el test de silla para medir tu progreso.";
+                document.getElementById("nextTestReminder").innerHTML = "📢 ¡Ya pasaron 15 días! Realiza el test de silla.";
             } else {
-                document.getElementById("nextTestReminder").innerHTML = `✅ Próximo test de silla en ${15-diffDays} días.`;
+                document.getElementById("nextTestReminder").innerHTML = `✅ Próximo test en ${15-diffDays} días.`;
             }
         } else {
-            document.getElementById("nextTestReminder").innerHTML = "🌟 Realiza tu primer test de silla (30 segundos) para establecer tu línea base.";
+            document.getElementById("nextTestReminder").innerHTML = "🌟 Realiza tu primer test de silla (30 segundos).";
         }
     }
     
@@ -756,48 +702,28 @@
         startWorkout();
     }
     
-    // ============================================================
-    //  AYUDA CON DOBLE CLIC EN EL LOGO (FUNCIONALIDAD PRINCIPAL)
-    // ============================================================
+    // Ayuda doble clic
     const helpModal = document.getElementById("helpModal");
-    let helpShownOnce = false;
-    
-    function openHelpModal() {
-        helpModal.classList.add("active");
-    }
-    
-    function closeHelpModal() {
-        helpModal.classList.remove("active");
-    }
-    
-    // Mostrar un pequeño toast la primera vez que se puede hacer doble clic
-    function showDoubleClickHint() {
-        if (!helpShownOnce) {
-            const toast = document.createElement("div");
-            toast.className = "toast";
-            toast.innerText = "🔍 Consejo: haz doble clic en el logo verde para ver la ayuda";
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3500);
-            helpShownOnce = true;
-            localStorage.setItem("helpHintShown", "true");
-        }
-    }
+    function openHelpModal() { helpModal.classList.add("active"); }
+    function closeHelpModal() { helpModal.classList.remove("active"); }
     
     function bindDoubleClickToLogos() {
-        const logos = document.querySelectorAll(".logo-clickable");
-        logos.forEach(logo => {
-            // Remover eventos anteriores para evitar duplicados
+        document.querySelectorAll(".logo-clickable").forEach(logo => {
             logo.removeEventListener("dblclick", openHelpModal);
-            logo.addEventListener("dblclick", (e) => {
-                e.stopPropagation();
-                openHelpModal();
-            });
+            logo.addEventListener("dblclick", (e) => { e.stopPropagation(); openHelpModal(); });
         });
     }
     
-    // Verificar si ya se mostró el hint
+    // Mostrar hint una sola vez
     if (!localStorage.getItem("helpHintShown")) {
-        setTimeout(showDoubleClickHint, 1500);
+        setTimeout(() => {
+            const toast = document.createElement("div");
+            toast.className = "toast";
+            toast.innerText = "🔍 Consejo: haz doble clic en el logo verde para ayuda";
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+            localStorage.setItem("helpHintShown", "true");
+        }, 1500);
     }
     
     // ============================================================
@@ -806,28 +732,55 @@
     document.getElementById("startSetupBtn").onclick = () => showScreen("setup");
     
     document.getElementById("saveProfileBtn").onclick = async () => {
-        const age = parseInt(document.getElementById("age").value);
-        const sex = document.getElementById("sex").value;
-        const weight = parseFloat(document.getElementById("weight").value);
-        const height = parseFloat(document.getElementById("height").value);
-        const timePerDay = parseInt(document.getElementById("timePerDay").value);
-        currentProfile = { age, sex, weight, height, timePerDay };
-        await saveProfile(currentProfile);
-        await refreshDashboard();
-        showScreen("dashboard");
-        bindDoubleClickToLogos();
+        const setupMessage = document.getElementById("setupMessage");
+        setupMessage.innerHTML = '<div class="loading">⏳ Guardando configuración...</div>';
+        
+        try {
+            const age = parseInt(document.getElementById("age").value);
+            const sex = document.getElementById("sex").value;
+            const weight = parseFloat(document.getElementById("weight").value);
+            const height = parseFloat(document.getElementById("height").value);
+            const timePerDay = parseInt(document.getElementById("timePerDay").value);
+            
+            if (!age || !weight || !height || age < 45 || age > 70) {
+                setupMessage.innerHTML = '<div class="warning">❌ Edad debe estar entre 45 y 70 años</div>';
+                return;
+            }
+            if (weight < 40 || weight > 200) {
+                setupMessage.innerHTML = '<div class="warning">❌ Peso debe estar entre 40 y 200 kg</div>';
+                return;
+            }
+            if (height < 120 || height > 220) {
+                setupMessage.innerHTML = '<div class="warning">❌ Talla debe estar entre 120 y 220 cm</div>';
+                return;
+            }
+            
+            currentProfile = { age, sex, weight, height, timePerDay };
+            await saveProfile(currentProfile);
+            await refreshDashboard();
+            
+            setupMessage.innerHTML = '<div class="success">✅ Plan generado correctamente. Redirigiendo...</div>';
+            
+            setTimeout(() => {
+                showScreen("dashboard");
+                setupMessage.innerHTML = '';
+            }, 1000);
+            
+        } catch(e) {
+            console.error("Error guardando perfil:", e);
+            setupMessage.innerHTML = '<div class="warning">❌ Error al guardar. Intenta de nuevo.</div>';
+        }
     };
     
     document.getElementById("logoutBtn").onclick = async () => {
         currentProfile = null;
         showScreen("welcome");
-        bindDoubleClickToLogos();
     };
     
-    document.getElementById("startDailyPlanBtn").onclick = async () => {
+    document.getElementById("startDailyPlanBtn").onclick = () => {
         if (!currentProfile) return;
         currentWorkoutExercises = generateDailyPlan(currentProfile);
-        if (currentWorkoutExercises.length === 0) alert("No hay ejercicios compatibles, ajusta perfil");
+        if (currentWorkoutExercises.length === 0) alert("No hay ejercicios compatibles");
         currentExerciseIndex = 0;
         startWorkout();
         showScreen("workout");
@@ -837,8 +790,8 @@
     
     document.getElementById("stopPainBtn").onclick = () => {
         clearInterval(timerInterval);
-        const pain = prompt("¿Cuánto dolor del 0 al 10? (0=nada, 10=máximo)");
-        alert("Detenido por dolor. Consulta a tu médico si persiste.");
+        prompt("¿Cuánto dolor del 0 al 10?");
+        alert("Detenido por dolor. Consulta a tu médico.");
         showScreen("dashboard");
     };
     
@@ -853,47 +806,73 @@
         document.getElementById("microList").innerHTML = html;
         showScreen("micro");
         document.querySelectorAll(".microTimerBtn").forEach(btn => {
-            btn.onclick = (e) => {
+            btn.onclick = () => {
                 const dur = parseInt(btn.dataset.dur);
                 alert(`⏱️ Inicia ${btn.dataset.name} durante ${dur} segundos`);
                 let count = dur;
                 const interval = setInterval(() => {
                     count--;
-                    if(count<=0) { clearInterval(interval); alert("✅ ¡Tiempo completado!"); }
+                    if(count<=0) { clearInterval(interval); alert("✅ Completado"); }
                 }, 1000);
             };
         });
     };
     
     document.getElementById("backFromMicroBtn").onclick = () => showScreen("dashboard");
+    document.getElementById("backFromProgressBtn").onclick = () => showScreen("dashboard");
     
     document.getElementById("testButton").onclick = async () => {
-        const reps = prompt("Test de silla 30 segundos: ¿Cuántas veces te levantaste sin usar manos?");
+        const reps = prompt("Test de silla 30s: ¿Cuántas veces te levantaste?");
         const pain = prompt("Dolor articular (0-10):");
-        if(reps) await registerSitToStand(parseInt(reps), parseInt(pain));
-        await refreshDashboard();
+        if(reps) {
+            await saveHistoryEntry({ date: new Date().toISOString().slice(0,10), type: "sitToStand", reps: parseInt(reps), painLevel: parseInt(pain) });
+            alert("Test guardado");
+            await refreshDashboard();
+        }
     };
     
     document.getElementById("progressBtn").onclick = async () => {
         const history = await loadHistory();
         const tests = history.filter(h => h.type === "sitToStand");
         let html = `<div class="chart"><h3>Evolución test de silla</h3>`;
-        tests.forEach(t => { html += `<div class="stat"><span>${t.date}</span><span>${t.reps} repeticiones · dolor ${t.painLevel}/10</span></div>`; });
+        if(tests.length === 0) html += "<p>Aún no hay tests. Realiza tu primer test.</p>";
+        tests.forEach(t => { html += `<div class="stat"><span>${t.date}</span><span>${t.reps} rep · dolor ${t.painLevel}/10</span></div>`; });
         html += `</div>`;
-        document.getElementById("progressStats").innerHTML = html || "<p>Realiza test para ver tu progreso.</p>";
+        document.getElementById("progressStats").innerHTML = html;
         showScreen("progress");
     };
     
-    document.getElementById("backFromProgressBtn").onclick = () => showScreen("dashboard");
-    
-    // Cerrar modal
     document.getElementById("closeHelpModal").onclick = closeHelpModal;
     document.getElementById("closeHelpBtn").onclick = closeHelpModal;
     helpModal.onclick = (e) => { if(e.target === helpModal) closeHelpModal(); };
     
+    // Instalación PWA
+    let deferredPrompt = null;
+    const installBanner = document.getElementById("installBanner");
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (!isStandalone) installBanner.style.display = "flex";
+    });
+    
+    document.getElementById("installBtn")?.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            installBanner.style.display = "none";
+        } else {
+            alert("Para instalar: Android ⋮ → Instalar app / iPhone compartir → Añadir a pantalla de inicio");
+        }
+    });
+    document.getElementById("closeBannerBtn")?.addEventListener('click', () => installBanner.style.display = "none");
+    if (isStandalone) installBanner.style.display = "none";
+    
     // Inicializar
     window.onload = async () => {
-        await openDB();
+        await initStorage();
         const saved = await loadProfile();
         if (saved) {
             currentProfile = saved;
@@ -905,12 +884,10 @@
         bindDoubleClickToLogos();
     };
     
-    // Service Worker para offline
     if ('serviceWorker' in navigator) {
         const swCode = `self.addEventListener('fetch', event => { event.respondWith(fetch(event.request).catch(() => caches.match(event.request))); });`;
         const blob = new Blob([swCode], {type: 'application/javascript'});
-        const swUrl = URL.createObjectURL(blob);
-        navigator.serviceWorker.register(swUrl);
+        navigator.serviceWorker.register(URL.createObjectURL(blob));
     }
 </script>
 </body>
