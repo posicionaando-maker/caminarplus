@@ -45,6 +45,7 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.05);
             overflow: hidden;
             min-height: 80vh;
+            position: relative;
         }
         
         .screen {
@@ -120,6 +121,36 @@
         
         button:active { transform: scale(0.97); }
         
+        /* Banner de instalación */
+        .install-banner {
+            background: #2C6E4E;
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            font-size: 0.9rem;
+        }
+        .install-banner button {
+            background: #FFD966;
+            color: #2C6E4E;
+            width: auto;
+            margin: 0;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+        .install-banner .close-banner {
+            background: transparent;
+            color: white;
+            font-size: 1.2rem;
+            padding: 4px 8px;
+            width: auto;
+        }
+        
         input, select {
             width: 100%;
             padding: 12px 16px;
@@ -188,13 +219,30 @@
             font-size: 0.9rem;
         }
         
-        /* Logo interactivo (doble clic para ayuda) */
+        /* Logo interactivo con indicador de doble clic */
         .logo-clickable {
             cursor: pointer;
             transition: transform 0.1s;
+            position: relative;
         }
         .logo-clickable:active {
             transform: scale(0.97);
+        }
+        
+        /* Tooltip que indica doble clic */
+        .logo-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .dblclick-hint {
+            font-size: 0.7rem;
+            color: #2C6E4E;
+            background: #E8EDE8;
+            padding: 4px 8px;
+            border-radius: 40px;
+            margin-top: 4px;
+            display: inline-block;
+            opacity: 0.7;
         }
         
         .logo-small {
@@ -260,25 +308,59 @@
             font-size: 1.5rem;
             cursor: pointer;
         }
+        
+        /* Toast pequeño para primera vez */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2C6E4E;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            z-index: 1100;
+            animation: fadeOut 3s ease forwards;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; bottom: 30px; }
+            70% { opacity: 1; }
+            100% { opacity: 0; bottom: 0px; visibility: hidden; }
+        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
+    <!-- BANNER DE INSTALACIÓN (se muestra en móvil si no está instalado) -->
+    <div id="installBanner" class="install-banner" style="display: none;">
+        <span>📲 Instala Caminar+ en tu pantalla de inicio</span>
+        <div style="display: flex; gap: 8px;">
+            <button id="installBtn">Instalar</button>
+            <button id="closeBannerBtn" class="close-banner">✖</button>
+        </div>
+    </div>
+
     <!-- PANTALLA DE BIENVENIDA / ADVERTENCIA MÉDICA -->
     <div id="welcomeScreen" class="screen active">
         <div class="logo-small">
-            <svg class="logo-clickable" id="helpLogoWelcome" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="48" fill="#2C6E4E" stroke="#1F4F38" stroke-width="2"/>
-                <circle cx="72" cy="24" r="5" fill="#FFD966"/>
-                <path d="M22 72 Q40 66 50 72 T78 72" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
-                <circle cx="48" cy="42" r="4.5" fill="white"/>
-                <line x1="48" y1="46.5" x2="48" y2="60" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
-                <line x1="48" y1="60" x2="56" y2="70" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
-                <line x1="48" y1="60" x2="40" y2="69" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
-                <line x1="48" y1="51" x2="56" y2="56" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-                <line x1="48" y1="51" x2="40" y2="56" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
+            <div class="logo-wrapper">
+                <svg class="logo-clickable" id="helpLogoWelcome" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="48" fill="#2C6E4E" stroke="#1F4F38" stroke-width="2"/>
+                    <circle cx="72" cy="24" r="5" fill="#FFD966"/>
+                    <path d="M22 72 Q40 66 50 72 T78 72" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+                    <circle cx="48" cy="42" r="4.5" fill="white"/>
+                    <line x1="48" y1="46.5" x2="48" y2="60" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
+                    <line x1="48" y1="60" x2="56" y2="70" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
+                    <line x1="48" y1="60" x2="40" y2="69" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
+                    <line x1="48" y1="51" x2="56" y2="56" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="48" y1="51" x2="40" y2="56" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <div class="dblclick-hint">🔍 doble clic para ayuda</div>
+            </div>
         </div>
         <h1 style="text-align:center;">Caminar+</h1>
         <p style="text-align:center; margin-bottom:24px;">Plan físico adaptado a tu cuerpo y tiempo</p>
@@ -324,15 +406,18 @@
     <!-- DASHBOARD PRINCIPAL -->
     <div id="dashboardScreen" class="screen">
         <div class="header-logo">
-            <svg class="logo-clickable" id="helpLogoDashboard" width="50" height="50" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="48" fill="#2C6E4E"/>
-                <circle cx="72" cy="24" r="5" fill="#FFD966"/>
-                <path d="M22 72 Q40 66 50 72 T78 72" stroke="white" stroke-width="3" fill="none"/>
-                <circle cx="48" cy="42" r="4.5" fill="white"/>
-                <line x1="48" y1="46.5" x2="48" y2="60" stroke="white" stroke-width="2.8"/>
-                <line x1="48" y1="60" x2="56" y2="70" stroke="white" stroke-width="2.8"/>
-                <line x1="48" y1="60" x2="40" y2="69" stroke="white" stroke-width="2.8"/>
-            </svg>
+            <div class="logo-wrapper">
+                <svg class="logo-clickable" id="helpLogoDashboard" width="50" height="50" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="48" fill="#2C6E4E"/>
+                    <circle cx="72" cy="24" r="5" fill="#FFD966"/>
+                    <path d="M22 72 Q40 66 50 72 T78 72" stroke="white" stroke-width="3" fill="none"/>
+                    <circle cx="48" cy="42" r="4.5" fill="white"/>
+                    <line x1="48" y1="46.5" x2="48" y2="60" stroke="white" stroke-width="2.8"/>
+                    <line x1="48" y1="60" x2="56" y2="70" stroke="white" stroke-width="2.8"/>
+                    <line x1="48" y1="60" x2="40" y2="69" stroke="white" stroke-width="2.8"/>
+                </svg>
+                <div class="dblclick-hint" style="font-size:0.6rem;">🔍 doble clic</div>
+            </div>
             <span style="font-weight:bold; color:#2C6E4E;">Caminar+</span>
             <button id="logoutBtn" style="width:auto; padding:6px 12px; background:#E8EDE8; color:#2C6E4E;">✖</button>
         </div>
@@ -390,6 +475,7 @@
         <div class="close-modal" id="closeHelpModal">&times;</div>
         <h2>📘 Ayuda de Caminar+</h2>
         <p><strong>¿Qué es?</strong> App de preparación física para personas de 45-70 años, adaptada a tu peso, edad y tiempo.</p>
+        
         <h3>✨ Beneficios</h3>
         <ul>
             <li>Ejercicios sin implementos (solo manta opcional)</li>
@@ -398,6 +484,7 @@
             <li>Funciona sin internet</li>
             <li>Test de silla cada 15 días para medir progreso</li>
         </ul>
+        
         <h3>🖱️ Cómo usar</h3>
         <ul>
             <li><strong>Configuración inicial:</strong> ingresa edad, peso, talla y tiempo disponible.</li>
@@ -405,16 +492,68 @@
             <li><strong>Microsesión:</strong> ideal para la oficina, pulsa el botón "Cronómetro".</li>
             <li><strong>Test de silla:</strong> levántate y siéntate 30 segundos sin usar manos.</li>
             <li><strong>Botón "Me duele":</strong> detiene la sesión si hay dolor articular.</li>
+            <li><strong>🔍 Doble clic en el logo verde:</strong> abre esta ayuda en cualquier pantalla.</li>
         </ul>
+        
         <h3>⚠️ Seguridad</h3>
         <p>Dolor articular agudo = detener. Ardor muscular = normal. Consulta a tu médico si tienes dudas.</p>
+        
         <button id="closeHelpBtn">Entendido</button>
     </div>
 </div>
 
 <script>
     // ============================================================
-    //  BASE DE DATOS INDEXEDDB (offline, persistente)
+    //  INSTALACIÓN PWA (para móvil)
+    // ============================================================
+    let deferredPrompt = null;
+    const installBanner = document.getElementById("installBanner");
+    const installBtn = document.getElementById("installBtn");
+    const closeBannerBtn = document.getElementById("closeBannerBtn");
+    
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                         window.navigator.standalone === true;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (!isStandalone) {
+            installBanner.style.display = "flex";
+        }
+    });
+    
+    window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        installBanner.style.display = "none";
+    });
+    
+    if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installBanner.style.display = "none";
+                }
+                deferredPrompt = null;
+            } else {
+                alert("Para instalar: en Android toca ⋮ → Instalar app. En iPhone: compartir → Añadir a pantalla de inicio.");
+            }
+        });
+    }
+    
+    if (closeBannerBtn) {
+        closeBannerBtn.addEventListener('click', () => {
+            installBanner.style.display = "none";
+        });
+    }
+    
+    if (isStandalone) {
+        installBanner.style.display = "none";
+    }
+    
+    // ============================================================
+    //  BASE DE DATOS INDEXEDDB
     // ============================================================
     const DB_NAME = "CaminarPlusDB";
     const DB_VERSION = 1;
@@ -516,9 +655,10 @@
     function showScreen(screenName) {
         Object.keys(screens).forEach(s => screens[s].classList.remove("active"));
         screens[screenName].classList.add("active");
+        // Reasignar doble clic después de cambiar pantalla
+        bindDoubleClickToLogos();
     }
     
-    // Calcular IMC y contexto corporal
     function getIMCContext(weight, heightCm) {
         const heightM = heightCm / 100;
         const imc = weight / (heightM * heightM);
@@ -530,7 +670,6 @@
         return { imc, context };
     }
     
-    // Generar plan diario según IMC, tiempo disponible, edad
     function generateDailyPlan(profile) {
         const { imc } = getIMCContext(profile.weight, profile.height);
         let allowedTypes = ["cardio_sin_impacto", "fuerza_suelo", "estiramiento"];
@@ -544,7 +683,6 @@
         return filtered;
     }
     
-    // Microsesiones
     function getMicroExercises() {
         return EXERCISES.filter(ex => ex.tipo === "micro_oficina").slice(0, 6);
     }
@@ -578,7 +716,6 @@
         }
     }
     
-    // Workout
     function startWorkout() {
         if (currentExerciseIndex >= currentWorkoutExercises.length) {
             alert("¡Sesión completada!");
@@ -620,9 +757,10 @@
     }
     
     // ============================================================
-    //  FUNCIÓN DE AYUDA (DOBLE CLIC EN LOGO)
+    //  AYUDA CON DOBLE CLIC EN EL LOGO (FUNCIONALIDAD PRINCIPAL)
     // ============================================================
     const helpModal = document.getElementById("helpModal");
+    let helpShownOnce = false;
     
     function openHelpModal() {
         helpModal.classList.add("active");
@@ -632,15 +770,34 @@
         helpModal.classList.remove("active");
     }
     
-    // Asignar evento de doble clic a TODOS los logos con clase .logo-clickable
+    // Mostrar un pequeño toast la primera vez que se puede hacer doble clic
+    function showDoubleClickHint() {
+        if (!helpShownOnce) {
+            const toast = document.createElement("div");
+            toast.className = "toast";
+            toast.innerText = "🔍 Consejo: haz doble clic en el logo verde para ver la ayuda";
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+            helpShownOnce = true;
+            localStorage.setItem("helpHintShown", "true");
+        }
+    }
+    
     function bindDoubleClickToLogos() {
         const logos = document.querySelectorAll(".logo-clickable");
         logos.forEach(logo => {
+            // Remover eventos anteriores para evitar duplicados
+            logo.removeEventListener("dblclick", openHelpModal);
             logo.addEventListener("dblclick", (e) => {
                 e.stopPropagation();
                 openHelpModal();
             });
         });
+    }
+    
+    // Verificar si ya se mostró el hint
+    if (!localStorage.getItem("helpHintShown")) {
+        setTimeout(showDoubleClickHint, 1500);
     }
     
     // ============================================================
@@ -658,7 +815,7 @@
         await saveProfile(currentProfile);
         await refreshDashboard();
         showScreen("dashboard");
-        bindDoubleClickToLogos(); // Re-asignar después de cambiar pantalla
+        bindDoubleClickToLogos();
     };
     
     document.getElementById("logoutBtn").onclick = async () => {
@@ -734,7 +891,7 @@
     document.getElementById("closeHelpBtn").onclick = closeHelpModal;
     helpModal.onclick = (e) => { if(e.target === helpModal) closeHelpModal(); };
     
-    // Inicializar BD y cargar perfil existente
+    // Inicializar
     window.onload = async () => {
         await openDB();
         const saved = await loadProfile();
